@@ -1,0 +1,6 @@
+@PathFinder_Plus_HostAddress = http://localhost:5062
+
+GET {{PathFinder_Plus_HostAddress}}/api/Route/
+Accept: application/json
+
+###
