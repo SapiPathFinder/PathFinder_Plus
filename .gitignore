@@ -1,0 +1,9 @@
+﻿########################################################################################
+# This is a .gitignore file, it was created to disable source control on specific items.
+########################################################################################
+
+/.vs/PathFinder_Plus
+/PathFinder_Plus/EnvironmentalVariables.cs
+/.vs
+/PathFinder_Plus/bin/Debug/net8.0
+/PathFinder_Plus/obj
