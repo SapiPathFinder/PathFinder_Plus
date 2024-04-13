@@ -1,23 +1,38 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using PathFinder_Plus.Models;
 
 namespace PathFinder_Plus.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class RouteController(MultiPointRouteFinder routeFinder) : ControllerBase
+    public class RouteController() : ControllerBase
     {
-        private readonly MultiPointRouteFinder _routeFinder = routeFinder;
+        private readonly Greedy _greedy = new();
+        private readonly Backtracking _backtracking = new();
 
         [HttpPost]
         [Route("routeAndPoi")]
-        public async Task<IActionResult> FindRoutes([FromBody] List<Coordinate> pois)
+        public async Task<IActionResult> FindRoute([FromBody] List<Coordinate> pois)
         {
             if (pois == null || pois.Count < 2)
             {
                 return BadRequest("Please provide at least 2 POIs in the request body.");
             }
 
-            var routes = await _routeFinder.FindMinimumDistanceRoutes(pois);
+            var routes = await _greedy.FindMinimumDistanceRoute(pois);
+            return Ok(routes);
+        }
+
+        [HttpPost]
+        [Route("routeAndPoiBt")]
+        public async Task<IActionResult> FindRouteBt([FromBody] RequestBody request)
+        {
+            if (request.Pois == null || request.Pois.Count < 2)
+            {
+                return BadRequest("Please provide at least 2 POIs in the request body.");
+            }
+
+            var routes = await _backtracking.FindMinimumDistanceRouteBt(request.Pois, request.Start);
             return Ok(routes);
         }
     }

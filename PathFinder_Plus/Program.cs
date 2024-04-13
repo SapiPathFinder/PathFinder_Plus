@@ -2,7 +2,8 @@ using PathFinder_Plus.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddScoped<MultiPointRouteFinder>();
+builder.Services.AddScoped<Greedy>();
+builder.Services.AddScoped<Backtracking>();
 
 builder.Services.AddControllers();
 
