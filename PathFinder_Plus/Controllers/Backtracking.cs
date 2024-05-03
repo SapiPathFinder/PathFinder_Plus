@@ -5,13 +5,19 @@
     using System.Net.Http;
     using System.Threading.Tasks;
     using System.Text.Json;
+    using System.Text;
     using PathFinder_Plus.Models;
 
     public class Backtracking
     {
         private readonly HttpClient _client;
         private readonly string ORS_KEY = EnvironmentalVariables.ORS_KEY;
-        private readonly string openRouteServiceBaseUrl = "https://api.openrouteservice.org/v2/directions/driving-car";
+        private readonly string matrixBaseUrl = "https://api.openrouteservice.org/v2/matrix/driving-car";
+
+        private class DistanceMatrix
+        {
+            public double[][]? distances { get; set; }
+        }
 
         public Backtracking()
         {
@@ -25,83 +31,85 @@
 
         public async Task<Route> FindMinimumDistanceRouteBt(List<Coordinate> pois, Coordinate start)
         {
-          pois.Insert(0, start);
+            pois.Insert(0, start);
 
-          var distanceMatrix = await CalculateDistanceMatrix(pois);
+            var payloadPois = pois.Select(poi => new double[] { poi.Longitude, poi.Latitude }).ToList();
 
-          var permutations = GetPermutationsBt(pois);
-          Route minRoute = null;
-          double minDistance = double.MaxValue;
+            using StringContent jsonContent = new(
+             JsonSerializer.Serialize(new
+             {
+                 locations = payloadPois,
+                 metrics = new string[] { "distance" }
+             }),
+             Encoding.UTF8,
+             "application/json");
 
-          foreach (var permutation in permutations)
-          {
-            var totalDistance = CalculateRouteDistance(permutation, distanceMatrix);
-            if (totalDistance < minDistance)
+            HttpRequestMessage request = new()
             {
-              minDistance = totalDistance;
-              minRoute = new Route(permutation, totalDistance);
-            }
-          }
+                Method = HttpMethod.Post,
+                RequestUri = new Uri(matrixBaseUrl),
+                Headers = { { "Authorization", ORS_KEY } },
+                Content = jsonContent
+            };
 
-          return minRoute;
-        }
+            using HttpResponseMessage response = await _client.SendAsync(request);
 
-        private async Task<double[,]> CalculateDistanceMatrix(List<Coordinate> points)
-        {
-            var distanceMatrix = new double[points.Count, points.Count];
+            response.EnsureSuccessStatusCode();
 
-            var tasks = new List<Task>();
-            for (int i = 0; i < points.Count - 1; i++)
+            var distanceMatrix = new double[pois.Count][];
+
+            try
             {
-                for (int j = i + 1; j < points.Count - 2; j++)
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                var jsonObject = JsonSerializer.Deserialize<DistanceMatrix>(jsonResponse);
+
+                if (jsonObject != null && jsonObject.distances != null)
                 {
-                    tasks.Add(Task.Run(async () =>
+                    distanceMatrix = jsonObject.distances;
+                    for (int i = 0; i < distanceMatrix.GetLength(0); i++)
                     {
-                        var distance = await GetRouteDistanceBt(points[i], points[j]);
-                        distanceMatrix[i, j] = distance;
-                        distanceMatrix[j, i] = distance;
-                    }));
+                        for (int j = 0; j < distanceMatrix.GetLength(0); j++)
+                        {
+                            Console.Write($"{distanceMatrix[i][j]} ");
+                        }
+                        Console.WriteLine();
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Deserialization resulted in null object.");
+                }
+            }
+            catch (JsonException ex)
+            {
+                Console.WriteLine("Error deserializing JSON: " + ex.Message);
+            }
+
+            var permutations = GetPermutationsBt(pois);
+            Route minRoute = null;
+            double minDistance = double.MaxValue;
+
+            foreach (var permutation in permutations)
+            {
+                var totalDistance = CalculateRouteDistance(permutation, distanceMatrix);
+                if (totalDistance < minDistance)
+                {
+                    minDistance = totalDistance;
+                    minRoute = new Route(permutation, totalDistance);
                 }
             }
 
-            await Task.WhenAll(tasks);
-
-            return distanceMatrix;
+            return minRoute;
         }
 
-        private static double CalculateRouteDistance(List<Coordinate> route, double[,] distanceMatrix)
+        private static double CalculateRouteDistance(List<Coordinate> route, double[][] distanceMatrix)
         {
-          var totalDistance = 0.0;
-          for (int i = 0; i < route.Count - 1; i++)
-          {
-            totalDistance += distanceMatrix[i, i + 1];
-          }
-          return totalDistance;
-        }
-
-        private async Task<double> GetRouteDistanceBt(Coordinate start, Coordinate end)
-        {
-            var startString = $"{start.Latitude},{start.Longitude}";
-            var endString = $"{end.Latitude},{end.Longitude}";
-
-            var directionsRequest = new HttpRequestMessage()
+            var totalDistance = 0.0;
+            for (int i = 0; i < route.Count - 1; i++)
             {
-                RequestUri = new Uri($"{openRouteServiceBaseUrl}?api_key={ORS_KEY}&start={startString}&end={endString}"),
-                Method = HttpMethod.Get
-            };
-
-            var response = await _client.SendAsync(directionsRequest);
-
-            if (response.IsSuccessStatusCode)
-            {
-                var responseString = await response.Content.ReadAsStringAsync();
-                var distance = ParseDistanceFromResponse(responseString);
-                return distance;
+                totalDistance += distanceMatrix[i][i + 1];
             }
-            else
-            {
-                throw new Exception($"Error getting directions: {response.StatusCode}");
-            }
+            return totalDistance;
         }
 
         private static List<List<Coordinate>> GetPermutationsBt(List<Coordinate> points)
@@ -125,42 +133,6 @@
                 }
             }
             return permutations;
-        }
-
-        private static double ParseDistanceFromResponse(string responseString)
-        {
-            JsonDocument responseDocument = JsonDocument.Parse(responseString);
-            JsonElement root = responseDocument.RootElement;
-
-            if (!root.TryGetProperty("features", out JsonElement featuresElement))
-            {
-                Console.WriteLine("Features property not found.");
-                throw new Exception("Failed to parse distance from OpenRouteService response.");
-            }
-
-            if (featuresElement.ValueKind != JsonValueKind.Array || featuresElement.GetArrayLength() == 0)
-            {
-                Console.WriteLine("Features property is not an array or is empty.");
-                throw new Exception("Failed to parse distance from OpenRouteService response.");
-            }
-
-            JsonElement firstFeature = featuresElement[0];
-
-            if (!firstFeature.TryGetProperty("properties", out JsonElement propertiesElement) ||
-                !propertiesElement.TryGetProperty("summary", out JsonElement summaryElement))
-            {
-                Console.WriteLine("Properties or Summary property not found.");
-                throw new Exception("Failed to parse distance from OpenRouteService response.");
-            }
-
-            if (!summaryElement.TryGetProperty("distance", out JsonElement distanceElement) ||
-                distanceElement.ValueKind != JsonValueKind.Number)
-            {
-                Console.WriteLine("Distance property not found or is not a number.");
-                throw new Exception("Failed to parse distance from OpenRouteService response.");
-            }
-
-            return distanceElement.GetDouble();
         }
     }
 }
