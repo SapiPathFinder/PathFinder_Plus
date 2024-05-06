@@ -39,9 +39,17 @@ namespace PathFinder_Plus.Controllers
 
         [HttpPost]
         [Route("poisStandard")]
-        public async Task<IActionResult> GetPOIsStandard([FromBody] RequestBody request)
+        public async Task<IActionResult> GetPOIsStandard([FromBody] RequestBodyWithEndpoint request)
         {
             var pois = await Api.GetPOIsStandard(request.Start, request.End);
+            return Ok(pois);
+        }
+
+        [HttpPost]
+        [Route("poisBuffer")]
+        public async Task<IActionResult> GetPOIsBuffer([FromBody] RequestBodyWithBuffer request)
+        {
+            var pois = await Api.GetPOIsStandard(request.Start, request.End, request.Buffer);
             return Ok(pois);
         }
 

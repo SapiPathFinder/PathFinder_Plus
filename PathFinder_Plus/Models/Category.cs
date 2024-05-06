@@ -8,6 +8,6 @@ namespace PathFinder_Plus.Models
         public int Id { get; set; }
 
         [JsonPropertyName("children")]
-        public Dictionary<string, object> Children { get; set; }
+        public Dictionary<string, Category> Children { get; set; }
     }
 }

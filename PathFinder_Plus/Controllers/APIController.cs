@@ -24,7 +24,7 @@
             _client = new HttpClient();
         }
 
-        public async Task<string> GetPOIsStandard(Coordinate start, Coordinate end)
+        public async Task<string> GetPOIsStandard(Coordinate start, Coordinate end, int buffer = 250)
         {
             var startString = $"{start.Latitude},{start.Longitude}";
             var endString = $"{end.Latitude},{end.Longitude}";
@@ -40,7 +40,7 @@
                         ""type"": ""Point"",
                         ""coordinates"": [{startString}]
                     }},
-                    ""buffer"": 250
+                    ""buffer"": {buffer}
                 }}
             }}";
 
@@ -90,8 +90,6 @@
                 var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, WriteIndented = true };
 
                 var result = JsonSerializer.Deserialize<Dictionary<string, object>>(responseString, options);
-
-                // !! serialize result into a model in order to work with it in a more structured way
 
                 return result;
             }
