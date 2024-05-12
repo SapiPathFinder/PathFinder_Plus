@@ -53,7 +53,7 @@ namespace PathFinder_Plus.Controllers
             return Ok(pois);
         }
 
-        [HttpPost]
+        [HttpGet]
         [Route("categoriesList")]
         public async Task<IActionResult> GetPOICategories()
         {
