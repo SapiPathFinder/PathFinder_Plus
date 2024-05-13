@@ -5,4 +5,16 @@
         public required List<Coordinate> Pois { get; set; }
         public required Coordinate Start { get; set; }
     }
+
+    public class RequestBodyWithEndpoint : RequestBody
+    {
+        public required Coordinate End { get; set; }
+    }
+
+    public class RequestBodyWithBuffer : RequestBodyWithEndpoint
+    {
+        public int Buffer { get; set; }
+    }
+
+    
 }
