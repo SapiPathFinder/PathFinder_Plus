@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PathFinder_Plus.Models;
+using PathFinder_Plus.Services;
 
 namespace PathFinder_Plus.Controllers
 {
@@ -7,9 +8,9 @@ namespace PathFinder_Plus.Controllers
     [ApiController]
     public class RouteController() : ControllerBase
     {
-        private readonly Greedy _greedy = new();
-        private readonly Backtracking _backtracking = new();
-        private readonly APIController Api = new();
+        private readonly GreedyService _greedy = new();
+        private readonly BacktrackingService _backtracking = new();
+        private readonly POIService Api = new();
 
         [HttpPost]
         [Route("routeAndPoi")]

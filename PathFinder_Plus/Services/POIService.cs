@@ -1,4 +1,4 @@
-﻿namespace PathFinder_Plus.Controllers
+﻿namespace PathFinder_Plus.Services
 {
     using PathFinder_Plus.Models;
     using System;
@@ -8,13 +8,13 @@
     using System.Text.Json;
     using System.Threading.Tasks;
 
-    public class APIController
+    public class POIService
     {
         private readonly HttpClient _client;
         private readonly string ORS_KEY = EnvironmentalVariables.ORS_KEY;
         private readonly string openRouteServiceBaseUrl = "https://api.openrouteservice.org/pois";
-        
-        public APIController()
+
+        public POIService()
         {
             if (ORS_KEY is null)
             {
