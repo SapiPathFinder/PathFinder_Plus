@@ -1,4 +1,4 @@
-﻿namespace PathFinder_Plus.Controllers
+﻿namespace PathFinder_Plus.Services
 {
     using System;
     using System.Collections.Generic;
@@ -8,7 +8,7 @@
     using System.Text;
     using PathFinder_Plus.Models;
 
-    public class Backtracking
+    public class BacktrackingService
     {
         private readonly HttpClient _client;
         private readonly string ORS_KEY = EnvironmentalVariables.ORS_KEY;
@@ -19,7 +19,7 @@
             public double[][]? distances { get; set; }
         }
 
-        public Backtracking()
+        public BacktrackingService()
         {
             if (ORS_KEY is null)
             {

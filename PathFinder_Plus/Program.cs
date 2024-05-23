@@ -1,9 +1,9 @@
-using PathFinder_Plus.Controllers;
+using PathFinder_Plus.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddScoped<Greedy>();
-builder.Services.AddScoped<Backtracking>();
+builder.Services.AddScoped<GreedyService>();
+builder.Services.AddScoped<BacktrackingService>();
 
 builder.Services.AddControllers();
 

@@ -1,4 +1,4 @@
-﻿namespace PathFinder_Plus.Controllers
+﻿namespace PathFinder_Plus.Services
 {
     using System;
     using System.Collections.Generic;
@@ -7,13 +7,13 @@
     using System.Text.Json;
     using PathFinder_Plus.Models;
 
-    public class Greedy
+    public class GreedyService
     {
         private readonly HttpClient _client;
         private readonly string ORS_KEY = EnvironmentalVariables.ORS_KEY;
         private readonly string openRouteServiceBaseUrl = "https://api.openrouteservice.org/v2/directions/driving-car";
 
-        public Greedy()
+        public GreedyService()
         {
             if (ORS_KEY is null)
             {
