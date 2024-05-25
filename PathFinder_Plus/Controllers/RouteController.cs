@@ -27,14 +27,14 @@ namespace PathFinder_Plus.Controllers
 
         [HttpPost]
         [Route("routeAndPoiBt")]
-        public async Task<IActionResult> FindRouteBt([FromBody] RequestBody request)
+        public async Task<IActionResult> FindRouteBt([FromBody] RequestBodyBBox request)
         {
-            if (request.Pois == null || request.Pois.Count < 2)
+            if (request.Start == null || request.End == null)
             {
-                return BadRequest("Please provide at least 2 POIs in the request body.");
+                return BadRequest("Please provide the Start and End points.");
             }
 
-            var routes = await _backtracking.FindMinimumDistanceRouteBt(request.Pois, request.Start);
+            var routes = await _backtracking.FindMinimumDistanceRouteBt(request.Start, request.End, request.Buffer);
             return Ok(routes);
         }
 
