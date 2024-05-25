@@ -1,8 +1,8 @@
 ﻿namespace PathFinder_Plus.Models
 {
-    public class Coordinate
+    public class Coordinate(double latitude, double longitude)
     {
-        public double Latitude { get; set; }
-        public double Longitude { get; set; }
+        public double Latitude { get; set; } = latitude;
+        public double Longitude { get; set; } = longitude;
     }
 }
