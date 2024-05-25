@@ -119,6 +119,7 @@
 
             return points;
         }
+
         private static double CalculateRouteDistance(List<Coordinate> route, double[][] distanceMatrix)
         {
             var totalDistance = 0.0;
