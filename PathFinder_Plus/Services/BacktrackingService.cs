@@ -37,6 +37,14 @@
 
             var pois = ExtractPointsFromResponse(standardPois);
 
+            pois.Add(new Coordinate(start.Longitude, start.Latitude));
+            pois.Add(new Coordinate(end.Longitude, end.Latitude));
+
+            if (buffer > 250)
+            {
+                return new Route(pois, 0);
+            }
+
             var payloadPois = pois.Select(poi => new double[] { poi.Longitude, poi.Latitude }).ToList();
 
             using StringContent jsonContent = new(
